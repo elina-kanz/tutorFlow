@@ -25,15 +25,16 @@ class ScheduleView: UIView {
     }()
     
     lazy var daysOfWeekCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = 0
-        layout.sectionInset = .zero
-        layout.estimatedItemSize = .zero
+        let layout = ScheduleGridLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
-        collectionView.register(DayOfWeekCell.self, forCellWithReuseIdentifier: DayOfWeekCell.identifier)
+        
+        collectionView.register(ScheduleCell.self, forCellWithReuseIdentifier: ScheduleCell.reuseIdentifier)
+        collectionView.register(DayHeaderView.self, forSupplementaryViewOfKind: DayHeaderView.elementKind, withReuseIdentifier: DayHeaderView.reuseIdentifier)
+        collectionView.register(HourHeaderView.self, forSupplementaryViewOfKind: HourHeaderView.elementKind, withReuseIdentifier: HourHeaderView.reuseIdentifier)
+        
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
@@ -60,12 +61,11 @@ class ScheduleView: UIView {
     
     private func setViews() {
         addSubview(contentView)
-        contentView.addSubview(topPanelStack)
         
-        topPanelStack.addSubview(monthLabel)
+        contentView.addSubview(topPanelStack)
         contentView.addSubview(daysOfWeekCollectionView)
         
-        daysOfWeekCollectionView.register(DayOfWeekCell.self, forCellWithReuseIdentifier: "DayOfWeekCell")
+        topPanelStack.addSubview(monthLabel)
     }
     
     private func setupConstraints() {

@@ -13,6 +13,8 @@ class ScheduleViewController: UIViewController {
     private var currentWeekStartDate = Date().startOfWeek()
     private var daysOfWeek: [Date] = []
     
+    private var scheduleData: [Date: [Event]] = [:]
+    
     
     override func loadView() {
         view = self.mainView
@@ -41,7 +43,7 @@ class ScheduleViewController: UIViewController {
     }
     
     private func setupMonthYear() {
-        let monthYear = "\(currentWeekStartDate.monthName()) \(currentWeekStartDate.yearNumber())"
+        let monthYear = "\(currentWeekStartDate.monthString()) \(currentWeekStartDate.yearString())"
         mainView.monthLabel.text = monthYear
     }
     
@@ -72,7 +74,10 @@ class ScheduleViewController: UIViewController {
             frame: mainView.daysOfWeekCollectionView.frame,
             collectionViewLayout: mainView.daysOfWeekCollectionView.collectionViewLayout
         )
-        tempCopyCollectionView.register(DayOfWeekCell.self, forCellWithReuseIdentifier: DayOfWeekCell.identifier)
+        tempCopyCollectionView.register(ScheduleCell.self, forCellWithReuseIdentifier: ScheduleCell.reuseIdentifier)
+        tempCopyCollectionView.register(DayHeaderView.self, forSupplementaryViewOfKind: DayHeaderView.elementKind, withReuseIdentifier: DayHeaderView.reuseIdentifier)
+        tempCopyCollectionView.register(HourHeaderView.self, forSupplementaryViewOfKind: HourHeaderView.elementKind, withReuseIdentifier: HourHeaderView.reuseIdentifier)
+        
         tempCopyCollectionView.dataSource = self
         tempCopyCollectionView.delegate = self
         tempCopyCollectionView.backgroundColor = .clear
@@ -139,28 +144,47 @@ extension ScheduleViewController: UICollectionViewDelegateFlowLayout {
 // MARK: - UICollectionViewDataSource
 
 extension ScheduleViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        var cell = collectionView.dequeueReusableCell(withReuseIdentifier: ScheduleCell.reuseIdentifier, for: indexPath)
+        
+        let day = indexPath.item
+        let hour = indexPath.section
+        
+        return cell
+    }
+    
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return daysOfWeek.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DayOfWeekCell.identifier, for: indexPath) as? DayOfWeekCell else {
-            return UICollectionViewCell()
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        
+        if kind == "DayHeader" {
+            let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: DayHeaderView.reuseIdentifier, for: indexPath) as! DayHeaderView
+            
+            let date = daysOfWeek[indexPath.item]
+            view.dayLabel.text = date.dayWeekString()
+            view.dateLabel.text = date.dateString()
+            
+            let isToday = Calendar.current.isDateInToday(date)
+            
+            view.dayLabel.textColor = isToday ? .blue : .gray
+            view.dayLabel.font = isToday ? .boldSystemFont(ofSize: 16) : .systemFont(ofSize: 16)
+            
+            view.dateLabel.textColor = isToday ? .blue : .gray
+            view.dateLabel.font = isToday ? .boldSystemFont(ofSize: 18) : .systemFont(ofSize: 16)
+            
+            return view
+        } else if kind == "HourHeader" {
+            let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HourHeaderView.reuseIdentifier, for: indexPath) as! HourHeaderView
+            
+            view.hourLabel.text = "\(indexPath.item):00"
+            
+            return view
         }
-        let date = daysOfWeek[indexPath.item]
         
-        cell.dayNameLabel.text = date.dayName()
-        cell.dayNumberLabel.text = date.dayNumber()
-        
-        let isToday = Calendar.current.isDateInToday(date)
-        
-        cell.dayNameLabel.textColor = isToday ? .blue : .gray
-        cell.dayNameLabel.font = isToday ? .boldSystemFont(ofSize: 16) : .systemFont(ofSize: 16)
-        
-        cell.dayNumberLabel.textColor = isToday ? .blue : .gray
-        cell.dayNumberLabel.font = isToday ? .boldSystemFont(ofSize: 18) : .systemFont(ofSize: 16)
-        
-        return cell
+        return UICollectionReusableView()
     }
 }
