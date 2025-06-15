@@ -56,6 +56,10 @@ class ScheduleGridLayout: UICollectionViewLayout {
         cache[indexPath]
     }
     
+    override func layoutAttributesForSupplementaryView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        return cache[indexPath]
+    }
+    
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
         return true
     }

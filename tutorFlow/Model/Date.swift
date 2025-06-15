@@ -24,25 +24,25 @@ extension Date {
         }
     }
     
-    func dayName() -> String {
+    func dayWeekString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "E"
         return formatter.string(from: self)
     }
     
-    func dayNumber() -> String {
+    func dateString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "d"
         return formatter.string(from: self)
     }
     
-    func monthName() -> String {
+    func monthString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM"
         return formatter.string(from: self)
     }
     
-    func yearNumber() -> String {
+    func yearString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy"
         return formatter.string(from: self)
