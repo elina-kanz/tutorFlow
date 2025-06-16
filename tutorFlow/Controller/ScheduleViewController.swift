@@ -28,18 +28,18 @@ class ScheduleViewController: UIViewController {
         setupMonthYear()
         setupWeekDays()
         setupSwipeGestures()
+        mainView.scheduleCollectionView.reloadData()
     }
     
     private func setupCollectionView() {
-        mainView.daysOfWeekCollectionView.delegate = self
-        mainView.daysOfWeekCollectionView.dataSource = self
-        mainView.daysOfWeekCollectionView.isPagingEnabled = true
-        mainView.daysOfWeekCollectionView.backgroundColor = UIColor.gray.withAlphaComponent(0.05)
+        mainView.scheduleCollectionView.dataSource = self
+        mainView.scheduleCollectionView.isPagingEnabled = true
+        mainView.scheduleCollectionView.backgroundColor = UIColor.gray.withAlphaComponent(0.05)
     }
     
     private func setupWeekDays() {
         daysOfWeek = currentWeekStartDate.datesForWeek()
-        mainView.daysOfWeekCollectionView.reloadData()
+        mainView.scheduleCollectionView.reloadData()
     }
     
     private func setupMonthYear() {
@@ -71,15 +71,14 @@ class ScheduleViewController: UIViewController {
         let newDates = currentWeekStartDate.datesForWeek()
         setupMonthYear()
         let tempCopyCollectionView = UICollectionView(
-            frame: mainView.daysOfWeekCollectionView.frame,
-            collectionViewLayout: mainView.daysOfWeekCollectionView.collectionViewLayout
+            frame: mainView.scheduleCollectionView.frame,
+            collectionViewLayout: mainView.scheduleCollectionView.collectionViewLayout
         )
         tempCopyCollectionView.register(ScheduleCell.self, forCellWithReuseIdentifier: ScheduleCell.reuseIdentifier)
         tempCopyCollectionView.register(DayHeaderView.self, forSupplementaryViewOfKind: DayHeaderView.elementKind, withReuseIdentifier: DayHeaderView.reuseIdentifier)
         tempCopyCollectionView.register(HourHeaderView.self, forSupplementaryViewOfKind: HourHeaderView.elementKind, withReuseIdentifier: HourHeaderView.reuseIdentifier)
         
         tempCopyCollectionView.dataSource = self
-        tempCopyCollectionView.delegate = self
         tempCopyCollectionView.backgroundColor = .clear
         tempCopyCollectionView.isScrollEnabled = false
         view.addSubview(tempCopyCollectionView)
@@ -89,22 +88,22 @@ class ScheduleViewController: UIViewController {
             tempCopyCollectionView.topAnchor.constraint(equalTo: mainView.monthLabel.bottomAnchor, constant: 10),
             tempCopyCollectionView.leadingAnchor.constraint(equalTo: mainView.contentView.leadingAnchor),
             tempCopyCollectionView.trailingAnchor.constraint(equalTo: mainView.contentView.trailingAnchor),
-            tempCopyCollectionView.heightAnchor.constraint(equalToConstant: 60),
+            tempCopyCollectionView.bottomAnchor.constraint(equalTo: mainView.contentView.bottomAnchor),
         ])
         
         let offsetX = direction == .left ? view.bounds.width : -view.bounds.width
         tempCopyCollectionView.transform = CGAffineTransform(translationX: offsetX, y: 0)
         
         daysOfWeek = newDates
-        mainView.daysOfWeekCollectionView.reloadData()
+        mainView.scheduleCollectionView.reloadData()
         
         UIView.animate(withDuration: 0.3, animations: {
-            self.mainView.daysOfWeekCollectionView.transform = CGAffineTransform(
+            self.mainView.scheduleCollectionView.transform = CGAffineTransform(
                 translationX: -offsetX, y: 0
             )
             tempCopyCollectionView.transform = .identity
         }) { _ in
-            self.mainView.daysOfWeekCollectionView.transform = .identity
+            self.mainView.scheduleCollectionView.transform = .identity
             tempCopyCollectionView.removeFromSuperview()
         }
     }
@@ -116,52 +115,27 @@ extension UIViewController {
     }
 }
 
-// MARK: - UICollectionViewDelegateFlowLayout
-
-extension ScheduleViewController: UICollectionViewDelegateFlowLayout {
-    
-    func collectionView(_ collectionView: UICollectionView,
-                       layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = floor(collectionView.bounds.width / 7)
-
-        return CGSize(width: width, height: 60)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView,
-                       layout collectionViewLayout: UICollectionViewLayout,
-                       minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 0
-    }
-    
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        insetForSectionAt section: Int) -> UIEdgeInsets {
-        return .zero
-    }
-}
-
 // MARK: - UICollectionViewDataSource
 
 extension ScheduleViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        var cell = collectionView.dequeueReusableCell(withReuseIdentifier: ScheduleCell.reuseIdentifier, for: indexPath)
-        
-        let day = indexPath.item
-        let hour = indexPath.section
-        
-        return cell
-    }
     
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 24
+    }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return daysOfWeek.count
     }
     
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ScheduleCell.reuseIdentifier, for: indexPath)
+        return cell
+    }
+    
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         
-        if kind == "DayHeader" {
+        if kind == DayHeaderView.elementKind {
             let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: DayHeaderView.reuseIdentifier, for: indexPath) as! DayHeaderView
             
             let date = daysOfWeek[indexPath.item]
@@ -177,14 +151,13 @@ extension ScheduleViewController: UICollectionViewDataSource {
             view.dateLabel.font = isToday ? .boldSystemFont(ofSize: 18) : .systemFont(ofSize: 16)
             
             return view
-        } else if kind == "HourHeader" {
+        } else if kind == HourHeaderView.elementKind {
             let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HourHeaderView.reuseIdentifier, for: indexPath) as! HourHeaderView
             
-            view.hourLabel.text = "\(indexPath.item):00"
+            view.hourLabel.text = "\(indexPath.section):00"
             
             return view
         }
-        
-        return UICollectionReusableView()
+        fatalError("Unexpected supplementary view kind")
     }
 }

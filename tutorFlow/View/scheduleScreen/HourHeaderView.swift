@@ -23,20 +23,26 @@ class HourHeaderView: UICollectionReusableView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        addSubview(hourLabel)
         
-        NSLayoutConstraint.activate([
-            hourLabel.topAnchor.constraint(equalTo: topAnchor, constant: 4),
-            hourLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
-            hourLabel.trailingAnchor.constraint(equalTo: trailingAnchor),
-            hourLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: 4),
-        ])
-        
-        
-        backgroundColor = UIColor.systemGray
+        setupViews()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupViews() {
+        addSubview(hourLabel)
+        
+        NSLayoutConstraint.activate([
+            hourLabel.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+            hourLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
+            hourLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            hourLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: 4),
+        ])
+        
+        backgroundColor = .systemBackground
+        layer.borderWidth = 1
+        layer.borderColor = UIColor.systemGray3.cgColor
     }
 }

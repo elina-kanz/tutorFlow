@@ -10,6 +10,14 @@ class ScheduleCell: UICollectionViewCell {
     
     static let reuseIdentifier = "ScheduleCell"
     
+    private lazy var lessonLabel: UILabel = {
+        let element = UILabel()
+        element.font = .systemFont(ofSize: 12)
+        element.textAlignment = .center
+        element.translatesAutoresizingMaskIntoConstraints = false
+        return element
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = UIColor.systemGray6
@@ -25,6 +33,7 @@ class ScheduleCell: UICollectionViewCell {
         
         if let event = event {
             backgroundColor = UIColor.systemBlue.withAlphaComponent(0.2)
+            lessonLabel.text = event.student?.name
         } else {
             backgroundColor = UIColor.white
         }

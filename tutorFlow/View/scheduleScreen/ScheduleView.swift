@@ -24,7 +24,7 @@ class ScheduleView: UIView {
         return element
     }()
     
-    lazy var daysOfWeekCollectionView: UICollectionView = {
+    lazy var scheduleCollectionView: UICollectionView = {
         let layout = ScheduleGridLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
@@ -63,7 +63,7 @@ class ScheduleView: UIView {
         addSubview(contentView)
         
         contentView.addSubview(topPanelStack)
-        contentView.addSubview(daysOfWeekCollectionView)
+        contentView.addSubview(scheduleCollectionView)
         
         topPanelStack.addSubview(monthLabel)
     }
@@ -87,10 +87,10 @@ class ScheduleView: UIView {
             monthLabel.trailingAnchor.constraint(equalTo: topPanelStack.trailingAnchor),
             monthLabel.heightAnchor.constraint(equalTo: topPanelStack.heightAnchor),
             
-            daysOfWeekCollectionView.topAnchor.constraint(equalTo: topPanelStack.bottomAnchor, constant: 10),
-            daysOfWeekCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            daysOfWeekCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            daysOfWeekCollectionView.heightAnchor.constraint(equalToConstant: 60),
+            scheduleCollectionView.topAnchor.constraint(equalTo: topPanelStack.bottomAnchor, constant: 10),
+            scheduleCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            scheduleCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            scheduleCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
     }
 }
