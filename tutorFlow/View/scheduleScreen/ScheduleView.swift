@@ -24,18 +24,20 @@ class ScheduleView: UIView {
         return element
     }()
     
-    lazy var pagerCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumLineSpacing = 0
-        layout.itemSize = UIScreen.main.bounds.size
-        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.isPagingEnabled = true
-        cv.backgroundColor = UIColor.gray.withAlphaComponent(0.05)
-        cv.translatesAutoresizingMaskIntoConstraints = false
-        return cv
+    lazy var scheduleCollectionView: UICollectionView = {
+        let layout = ScheduleGridLayout()
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.showsVerticalScrollIndicator = false
+        collectionView.showsHorizontalScrollIndicator = false
+        
+        collectionView.register(ScheduleCell.self, forCellWithReuseIdentifier: ScheduleCell.reuseIdentifier)
+        collectionView.register(DayHeaderView.self, forSupplementaryViewOfKind: DayHeaderView.elementKind, withReuseIdentifier: DayHeaderView.reuseIdentifier)
+        collectionView.register(HourHeaderView.self, forSupplementaryViewOfKind: HourHeaderView.elementKind, withReuseIdentifier: HourHeaderView.reuseIdentifier)
+        
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
     }()
-    
     
     lazy var monthLabel: UILabel = {
         let element = UILabel()
@@ -57,11 +59,12 @@ class ScheduleView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
     private func setViews() {
         addSubview(contentView)
         
         contentView.addSubview(topPanelStack)
-        contentView.addSubview(pagerCollectionView)
+        contentView.addSubview(scheduleCollectionView)
         
         topPanelStack.addSubview(monthLabel)
     }
@@ -85,10 +88,10 @@ class ScheduleView: UIView {
             monthLabel.trailingAnchor.constraint(equalTo: topPanelStack.trailingAnchor),
             monthLabel.heightAnchor.constraint(equalTo: topPanelStack.heightAnchor),
             
-            pagerCollectionView.topAnchor.constraint(equalTo: topPanelStack.bottomAnchor, constant: 10),
-            pagerCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            pagerCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            pagerCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            scheduleCollectionView.topAnchor.constraint(equalTo: topPanelStack.bottomAnchor, constant: 10),
+            scheduleCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            scheduleCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            scheduleCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
     }
     

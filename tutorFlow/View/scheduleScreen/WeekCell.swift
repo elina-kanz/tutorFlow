@@ -7,9 +7,9 @@
 
 import UIKit
 
-class WeekScheduleCell: UICollectionViewCell {
+class WeekCell: UICollectionViewCell {
 
-    static let reuseIdentifier = "WeekScheduleCell"
+    static let reuseIdentifier = "WeekCell"
     
     private var daysOfWeek: [Date] = []
     
@@ -53,7 +53,7 @@ class WeekScheduleCell: UICollectionViewCell {
     
 }
 
-extension WeekScheduleCell: UICollectionViewDataSource {
+extension WeekCell: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 24
