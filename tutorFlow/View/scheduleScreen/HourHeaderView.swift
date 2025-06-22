@@ -35,9 +35,9 @@ class HourHeaderView: UICollectionReusableView {
         addSubview(hourLabel)
         
         NSLayoutConstraint.activate([
-            hourLabel.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+            hourLabel.topAnchor.constraint(equalTo: topAnchor),
             hourLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
-            hourLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            hourLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
             hourLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: 4),
         ])
         

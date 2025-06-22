@@ -17,7 +17,7 @@ class ScheduleView: UIView {
         return element
     }()
     
-    private lazy var topPanelStack: UIStackView = {
+    lazy var topPanelStack: UIStackView = {
         let element = UIStackView()
         element.axis = .horizontal
         element.translatesAutoresizingMaskIntoConstraints = false
@@ -59,6 +59,7 @@ class ScheduleView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
     private func setViews() {
         addSubview(contentView)
         
@@ -93,4 +94,5 @@ class ScheduleView: UIView {
             scheduleCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
     }
+    
 }

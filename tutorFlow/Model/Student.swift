@@ -7,7 +7,8 @@
 
 import Foundation
 
-class Student {
+struct Student {
+    let id: UUID
     var name: String? = nil
     var surname: String? = nil
     var parents: [String?] = []
