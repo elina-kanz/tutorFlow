@@ -9,11 +9,14 @@ import UIKit
 
 class ScheduleViewController: UIViewController {
    
+    var lessonManager = LessonManager()
+    
     private let mainView: ScheduleView = .init()
     private var currentWeekStartDate = Date().startOfWeek()
     private var daysOfWeek: [Date] = []
     
-    private var scheduleData: [Date: [Event]] = [:]
+    
+    private var scheduleData: [Date: [Lesson]] = [:]
     
     
     override func loadView() {
@@ -22,7 +25,7 @@ class ScheduleViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavBar(title: "Schedule")
+        self.navigationItem.title = "Schedule"
         // configure()
         setupCollectionView()
         setupMonthYear()
@@ -32,6 +35,7 @@ class ScheduleViewController: UIViewController {
     }
     
     private func setupCollectionView() {
+        mainView.scheduleCollectionView.delegate = self
         mainView.scheduleCollectionView.dataSource = self
         mainView.scheduleCollectionView.isPagingEnabled = true
         mainView.scheduleCollectionView.backgroundColor = UIColor.gray.withAlphaComponent(0.05)
@@ -87,11 +91,27 @@ class ScheduleViewController: UIViewController {
     }
 }
 
-extension UIViewController {
-    func setupNavBar(title: String) {
-        self.navigationItem.title = title
+extension ScheduleViewController: UICollectionViewDelegate {
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedDay = daysOfWeek[indexPath.item]
+        let selectedHour = indexPath.section
+        
+        let calendar = Calendar.current
+        var dateComponents = calendar.dateComponents([.year, .month, .day], from: selectedDay)
+        dateComponents.hour = selectedHour
+        dateComponents.minute = 0
+        
+        guard let startDate = calendar.date(from: dateComponents) else { return }
+        
+        let formVC = LessonFormViewController()
+        formVC.startDate = startDate
+        formVC.lessonManager = lessonManager
+        present(UINavigationController(rootViewController: formVC), animated: true)
+        collectionView.reloadData()
     }
 }
+
 
 // MARK: - UICollectionViewDataSource
 
@@ -107,7 +127,25 @@ extension ScheduleViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ScheduleCell.reuseIdentifier, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ScheduleCell.reuseIdentifier, for: indexPath) as! ScheduleCell
+        
+        let day = daysOfWeek[indexPath.item]
+        let hour = indexPath.section
+        
+        let calendar = Calendar.current
+        
+        guard let slotStartDate = calendar.date(
+            bySettingHour: hour,
+            minute: 0,
+            second: 0,
+            of: day
+        ) else { return cell }
+        
+        if let lesson = lessonManager.lesson(at: slotStartDate) {
+            cell.configureBookedCell(cell, with: lesson)
+        } else {
+            cell.configureFreeCell(cell, for: slotStartDate)
+        }
         return cell
     }
     
@@ -122,10 +160,10 @@ extension ScheduleViewController: UICollectionViewDataSource {
             
             let isToday = Calendar.current.isDateInToday(date)
             
-            view.dayLabel.textColor = isToday ? .blue : .gray
-            view.dayLabel.font = isToday ? .boldSystemFont(ofSize: 16) : .systemFont(ofSize: 16)
+            view.dayLabel.textColor = isToday ? .blue : .darkGray
+            view.dayLabel.font = isToday ? .boldSystemFont(ofSize: 16) : .systemFont(ofSize: 14)
             
-            view.dateLabel.textColor = isToday ? .blue : .gray
+            view.dateLabel.textColor = isToday ? .blue : .darkGray
             view.dateLabel.font = isToday ? .boldSystemFont(ofSize: 18) : .systemFont(ofSize: 16)
             
             return view
@@ -138,4 +176,5 @@ extension ScheduleViewController: UICollectionViewDataSource {
         }
         fatalError("Unexpected supplementary view kind")
     }
+    
 }

@@ -6,7 +6,7 @@ class ScheduleGridLayout: UICollectionViewLayout {
     private var supplementaryCache: [String: [IndexPath: UICollectionViewLayoutAttributes]] = [:]
     private var contentSize: CGSize = .zero
     
-    let rowHeight: CGFloat = 60
+    let rowHeight: CGFloat = 50
     var columnWidth: CGFloat = 0
     
     let dayRowHeight: CGFloat = 50
