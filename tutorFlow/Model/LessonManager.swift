@@ -23,7 +23,7 @@ class LessonManager {
     private var students: [Student] = []
     var lessons: [Lesson]  = []
     
-    func addLesson(_ lessondata: LessonData) -> Lesson {
+    func addLesson(_ lessondata: LessonData) {
         let newId = UUID()
         let newLesson = Lesson(
             id: newId,
@@ -34,7 +34,6 @@ class LessonManager {
         )
         
         lessons.append(newLesson)
-        return newLesson
     }
     
     func lesson(at date: Date) -> Lesson? {

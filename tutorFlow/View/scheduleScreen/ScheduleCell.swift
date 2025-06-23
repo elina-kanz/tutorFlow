@@ -21,6 +21,7 @@ class ScheduleCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setViews()
+        setupConstraints()
     }
     
     required init?(coder: NSCoder) {
@@ -39,9 +40,20 @@ class ScheduleCell: UICollectionViewCell {
         cell.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.1)
         cell.layer.borderColor = UIColor.systemGreen.cgColor
         cell.layer.borderWidth = 1
+        
+        lessonLabel.text = ""
     }
     
     private func setViews() {
         addSubview(lessonLabel)
+    }
+    
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            lessonLabel.topAnchor.constraint(equalTo: topAnchor, constant: 2),
+            lessonLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 2),
+            lessonLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -2),
+            lessonLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -2),
+        ])
     }
 }
