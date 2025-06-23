@@ -38,12 +38,23 @@ class LessonFormView: UIView {
         let element = UIView()
         element.backgroundColor = .secondarySystemBackground
         element.layer.cornerRadius = 10
+        element.clipsToBounds = true
         element.translatesAutoresizingMaskIntoConstraints = false
         return element
     }()
     
-    lazy var datePicker = UIDatePicker()
-    lazy var durationPicker = UIPickerView()
+    lazy var datePicker: UIDatePicker = {
+        let element = UIDatePicker()
+        element.datePickerMode = .dateAndTime
+        element.translatesAutoresizingMaskIntoConstraints = false
+        return element
+    }()
+    
+    lazy var durationPicker: UIPickerView = {
+        let element = UIPickerView()
+        element.translatesAutoresizingMaskIntoConstraints = false
+        return element
+    }()
     
     init () {
         super.init(frame: .zero)
@@ -84,8 +95,12 @@ class LessonFormView: UIView {
             datePicker.topAnchor.constraint(equalTo: datePickerContainer.topAnchor, constant: 8),
             datePicker.leadingAnchor.constraint(equalTo: datePickerContainer.leadingAnchor, constant: 8),
             datePicker.trailingAnchor.constraint(equalTo: datePickerContainer.trailingAnchor, constant: -8),
-            datePicker.bottomAnchor.constraint(equalTo: datePickerContainer.bottomAnchor, constant: -8),
+            datePicker.heightAnchor.constraint(equalToConstant: 40),
             
+            durationPicker.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 2),
+            durationPicker.leadingAnchor.constraint(equalTo: datePickerContainer.leadingAnchor),
+            durationPicker.trailingAnchor.constraint(equalTo: datePickerContainer.trailingAnchor),
+            durationPicker.bottomAnchor.constraint(equalTo: datePickerContainer.bottomAnchor),
         ])
     }
 }

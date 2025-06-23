@@ -56,15 +56,20 @@ class LessonFormViewController: UIViewController {
             students: selectedStudents
         )
         
-        let createdLesson = lessonManager.addLesson(lessonData)
+        lessonManager.addLesson(lessonData)
         
-        dismiss(animated: true)
+        NotificationCenter.default.post(name: .lessonsDidUpdate, object: nil)
+        
+        dismiss(animated: true) {
+            if let presenter = self.presentingViewController as? ScheduleViewController {
+                presenter.reloadCollectionView()
+            }
+        }
     }
     
     private func setupDatePickers() {
         
         mainView.datePicker.date = startDate
-        mainView.datePicker.datePickerMode = .dateAndTime
         mainView.datePicker.minimumDate = startDate
         mainView.datePicker.maximumDate = Calendar.current.date(byAdding: .month, value: 3, to: startDate)
         

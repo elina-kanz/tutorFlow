@@ -31,6 +31,7 @@ class ScheduleViewController: UIViewController {
         setupMonthYear()
         setupWeekDays()
         setupSwipeGestures()
+        setupObservers()
         mainView.scheduleCollectionView.reloadData()
     }
     
@@ -61,6 +62,15 @@ class ScheduleViewController: UIViewController {
         view.addGestureRecognizer(rightSwipe)
     }
     
+    private func setupObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLessonsUpdate),
+            name: .lessonsDidUpdate,
+            object: nil
+        )
+    }
+    
     @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
         if gesture.direction == .left {
             currentWeekStartDate = currentWeekStartDate.dateByAddingWeeks(1)
@@ -87,8 +97,19 @@ class ScheduleViewController: UIViewController {
             self.mainView.scheduleCollectionView.reloadData()
             self.mainView.scheduleCollectionView.transform = .identity
         })
-            
     }
+    
+    @objc private func handleLessonsUpdate() {
+        reloadCollectionView()
+    }
+    
+    func reloadCollectionView() {
+        UIView.performWithoutAnimation {
+            mainView.scheduleCollectionView.reloadData()
+            mainView.scheduleCollectionView.layoutIfNeeded()
+        }
+    }
+    
 }
 
 extension ScheduleViewController: UICollectionViewDelegate {
@@ -108,7 +129,6 @@ extension ScheduleViewController: UICollectionViewDelegate {
         formVC.startDate = startDate
         formVC.lessonManager = lessonManager
         present(UINavigationController(rootViewController: formVC), animated: true)
-        collectionView.reloadData()
     }
 }
 
@@ -177,4 +197,8 @@ extension ScheduleViewController: UICollectionViewDataSource {
         fatalError("Unexpected supplementary view kind")
     }
     
+}
+
+extension Notification.Name {
+    static let lessonsDidUpdate = Notification.Name("lessonsDidUpdate")
 }
