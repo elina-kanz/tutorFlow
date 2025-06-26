@@ -8,20 +8,26 @@
 import Foundation
 
 struct Lesson {
-    var id: UUID
+    let id: UUID
     var startDate: Date
-    let duration: TimeInterval
+    var duration: Int
     var title: String
-    var students: [Student?] = []
+    var students: [Student] = []
+}
+
+struct LessonData {
+    let startDate: Date
+    let duration: Int
+    let title: String
+    let students: [Student]
 }
 
 class LessonManager {
     
     static let shared = LessonManager()
     
-    private var scheduleData: [Date: [Lesson]] = [:]
     private var students: [Student] = []
-    var lessons: [Lesson]  = []
+    private(set) var lessons: [Lesson]  = []
     
     func addLesson(_ lessondata: LessonData) {
         let newId = UUID()
@@ -36,19 +42,21 @@ class LessonManager {
         lessons.append(newLesson)
     }
     
-    func lesson(at date: Date) -> Lesson? {
-        let calendar = Calendar.current
+    func updateLesson(_ lesson: Lesson, with newLessonData: LessonData) {
+        guard let index = lessons.firstIndex(where: { $0.id == lesson.id}) else { return }
+        lessons[index].title = newLessonData.title
+        lessons[index].startDate = newLessonData.startDate
+        lessons[index].students = newLessonData.students
+        lessons[index].duration = newLessonData.duration
+     }
+    
+    func lesson(at slotStartDate: Date) -> Lesson? {
         
-        return lessons.first { lesson in
-            calendar.isDate(lesson.startDate, equalTo: date, toGranularity: .hour)
-        }
     }
-
-
-    struct LessonData {
-        let startDate: Date
-        let duration: TimeInterval
-        let title: String
-        let students: [Student]
+    
+    func deleteLesson(_ lesson: Lesson) {
+        guard let index = lessons.firstIndex(where: { $0.id == lesson.id}) else { return }
+        lessons.remove(at: index)
     }
 }
+

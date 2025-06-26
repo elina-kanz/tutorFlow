@@ -15,10 +15,6 @@ class ScheduleViewController: UIViewController {
     private var currentWeekStartDate = Date().startOfWeek()
     private var daysOfWeek: [Date] = []
     
-    
-    private var scheduleData: [Date: [Lesson]] = [:]
-    
-    
     override func loadView() {
         view = self.mainView
     }
@@ -128,6 +124,10 @@ extension ScheduleViewController: UICollectionViewDelegate {
         let formVC = LessonFormViewController()
         formVC.startDate = startDate
         formVC.lessonManager = lessonManager
+        if let index = lessonManager.lessons.firstIndex(where: {$0.startDate == startDate}) {
+            formVC.isEditMode = true
+            formVC.editingLesson = lessonManager.lessons[index]
+        }
         present(UINavigationController(rootViewController: formVC), animated: true)
     }
 }
@@ -161,7 +161,7 @@ extension ScheduleViewController: UICollectionViewDataSource {
             of: day
         ) else { return cell }
         
-        if let lesson = lessonManager.lesson(at: slotStartDate) {
+        if let lesson = lessonManager.lessonAt(at: slotStartDate) {
             cell.configureBookedCell(cell, with: lesson)
         } else {
             cell.configureFreeCell(cell, for: slotStartDate)
