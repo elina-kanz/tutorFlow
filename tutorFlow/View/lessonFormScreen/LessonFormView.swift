@@ -56,9 +56,40 @@ class LessonFormView: UIView {
         return element
     }()
     
+    lazy var studentsContainer: UIView = {
+        let element = UIView()
+        element.backgroundColor = .secondarySystemBackground
+        element.layer.cornerRadius = 10
+        element.clipsToBounds = true
+        element.translatesAutoresizingMaskIntoConstraints = false
+        return element
+    }()
+    
+    lazy var studentsTableView: UITableView = {
+        let element = UITableView()
+        element.register(UITableViewCell.self, forCellReuseIdentifier: StudentCell.reuseIdentifier)
+        element.layer.cornerRadius = 10
+        element.clipsToBounds = true
+        element.allowsMultipleSelection = true
+        element.translatesAutoresizingMaskIntoConstraints = false
+        return element
+    }()
+    
+    lazy var deleteButton: UIButton = {
+        let element = UIButton()
+        element.setTitle("Delete lesson", for: .normal)
+        element.setTitleColor(.red, for: .normal)
+        element.titleLabel?.font = .systemFont(ofSize: 16)
+        element.layer.borderColor = UIColor.red.cgColor
+        element.layer.borderWidth = 1
+        element.layer.cornerRadius = 8
+        element.isHidden = true
+        element.translatesAutoresizingMaskIntoConstraints = false
+        return element
+    }()
+    
     init () {
         super.init(frame: .zero)
-        self.backgroundColor = .systemBackground
         setViews()
         setupConstraints()
     }
@@ -68,6 +99,8 @@ class LessonFormView: UIView {
     }
     
     private func setViews() {
+        
+        self.backgroundColor = .systemBackground
         
         addSubview(contentView)
         
@@ -80,6 +113,12 @@ class LessonFormView: UIView {
         
         datePickerContainer.addSubview(datePicker)
         datePickerContainer.addSubview(durationPicker)
+        
+        contentView.addArrangedSubview(studentsContainer)
+
+        studentsContainer.addSubview(studentsTableView)
+        
+        contentView.addArrangedSubview(deleteButton)
     }
     
     private func setupConstraints() {
@@ -101,6 +140,20 @@ class LessonFormView: UIView {
             durationPicker.leadingAnchor.constraint(equalTo: datePickerContainer.leadingAnchor),
             durationPicker.trailingAnchor.constraint(equalTo: datePickerContainer.trailingAnchor),
             durationPicker.bottomAnchor.constraint(equalTo: datePickerContainer.bottomAnchor),
+            
+            studentsContainer.topAnchor.constraint(equalTo: datePickerContainer.bottomAnchor, constant: 4),
+            studentsContainer.heightAnchor.constraint(equalToConstant: 200),
+            
+            studentsTableView.topAnchor.constraint(equalTo: studentsContainer.topAnchor, constant: 8),
+            studentsTableView.leadingAnchor.constraint(equalTo: studentsContainer.leadingAnchor, constant: 8),
+            studentsTableView.trailingAnchor.constraint(equalTo: studentsContainer.trailingAnchor, constant: -8),
+            studentsTableView.bottomAnchor.constraint(equalTo: studentsContainer.bottomAnchor, constant: -8),
+                    
+            deleteButton.topAnchor.constraint(equalTo: studentsContainer.bottomAnchor, constant: 2),
+            
+            deleteButton.topAnchor.constraint(equalTo: datePickerContainer.bottomAnchor, constant: 2),
+            deleteButton.centerXAnchor.constraint(equalTo: datePickerContainer.centerXAnchor),
+            deleteButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
         ])
     }
 }
