@@ -62,7 +62,7 @@ class LessonFormViewController: UIViewController {
     
     @objc private func saveTapped() {
         
-        let lessonData = LessonManager.LessonData(
+        let lessonData = LessonData(
             startDate: mainView.datePicker.date,
             duration: mainView.durationPicker.selectedRow(inComponent: 0),
             title: mainView.titleTextField.text ?? "New Lesson",
@@ -188,10 +188,8 @@ extension LessonFormViewController: UISearchResultsUpdating {
         if searchText.isEmpty {
             filteredStudents = allStudents
         } else {
-            filteredStudents = allStudents.filter {
-                $0.name?.lowercased().contains(searchText) ?? false
+            filteredStudents = StudentManager.shared.searchStudents(with: searchText)
             }
-        }
         
         mainView.studentsTableView.reloadData()
     }

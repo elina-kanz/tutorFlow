@@ -161,7 +161,7 @@ extension ScheduleViewController: UICollectionViewDataSource {
             of: day
         ) else { return cell }
         
-        if let lesson = lessonManager.lesson(at: slotStartDate) {
+        if let lesson = lessonManager.lessonAt(at: slotStartDate) {
             cell.configureBookedCell(cell, with: lesson)
         } else {
             cell.configureFreeCell(cell, for: slotStartDate)

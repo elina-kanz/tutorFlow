@@ -15,6 +15,13 @@ struct Lesson {
     var students: [Student] = []
 }
 
+struct LessonData {
+    let startDate: Date
+    let duration: Int
+    let title: String
+    let students: [Student]
+}
+
 class LessonManager {
     
     static let shared = LessonManager()
@@ -43,24 +50,13 @@ class LessonManager {
         lessons[index].duration = newLessonData.duration
      }
     
+    func lesson(at slotStartDate: Date) -> Lesson? {
+        
+    }
+    
     func deleteLesson(_ lesson: Lesson) {
         guard let index = lessons.firstIndex(where: { $0.id == lesson.id}) else { return }
         lessons.remove(at: index)
     }
-    
-    func lesson(at date: Date) -> Lesson? {
-        let calendar = Calendar.current
-        
-        return lessons.first { lesson in
-            calendar.isDate(lesson.startDate, equalTo: date, toGranularity: .hour)
-        }
-    }
-
-
-    struct LessonData {
-        let startDate: Date
-        let duration: Int
-        let title: String
-        let students: [Student]
-    }
 }
+
