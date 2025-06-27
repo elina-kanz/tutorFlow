@@ -22,11 +22,10 @@ struct StudentData {
     var phoneNumber: String? = nil
 }
 
-class StudentManager {
+class StudentManager: StudentManagerProtocol {
     static let shared = StudentManager()
     
     private(set) var lessons: [Lesson]  = []
-    
     private var students: [Student] = []
     
     func addStudent(name: String, surname: String, parents: [String], phoneNumber: String) {

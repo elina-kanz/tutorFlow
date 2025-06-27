@@ -36,15 +36,14 @@ extension Date {
         return formatter.string(from: self)
     }
     
-    func monthString() -> String {
+    func monthYearString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM"
-        return formatter.string(from: self)
-    }
-    
-    func yearString() -> String {
-        let formatter = DateFormatter()
+        let month = formatter.string(from: self)
         formatter.dateFormat = "yyyy"
-        return formatter.string(from: self)
+        let year = formatter.string(from: self)
+        
+        return "\(month) \(year)"
     }
+
 }

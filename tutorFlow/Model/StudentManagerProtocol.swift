@@ -4,10 +4,10 @@
 //
 //  Created by Elina Kanzafarova on 26.06.2025.
 //
-protocol StudentServiceProtocol {
+protocol StudentManagerProtocol {
     func getAllStudents() -> [Student]
     func addStudent(_ StudentData: StudentData)
     func updateStudent(_ lessonData: StudentData)
     func deleteStudent(id: String)
-    func searchStudents()
+    func searchStudents(with searchText: String)
 }

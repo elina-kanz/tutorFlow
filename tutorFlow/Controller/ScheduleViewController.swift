@@ -9,11 +9,28 @@ import UIKit
 
 class ScheduleViewController: UIViewController {
    
-    var lessonManager = LessonManager()
+    private var lessonManager: LessonManagerProtocol
+    private var studentManager: StudentManagerProtocol
+    private var dateManager = DateManager()
+    private var dateFormatterService = DateFormatterService()
+    
     
     private let mainView: ScheduleView = .init()
     private var currentWeekStartDate = Date().startOfWeek()
     private var daysOfWeek: [Date] = []
+    
+    init(
+        lessonManager: LessonManagerProtocol = LessonManager.shared,
+        studentManager: StudentManagerProtocol = StudentManager.shared
+    ) {
+        self.lessonManager = lessonManager
+        self.studentManager = studentManager
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func loadView() {
         view = self.mainView
@@ -44,8 +61,7 @@ class ScheduleViewController: UIViewController {
     }
     
     private func setupMonthYear() {
-        let monthYear = "\(currentWeekStartDate.monthString()) \(currentWeekStartDate.yearString())"
-        mainView.monthLabel.text = monthYear
+        mainView.monthLabel.text = dateFormatterService.monthYearString(from: currentWeekStartDate)
     }
     
     private func setupSwipeGestures() {
@@ -69,10 +85,10 @@ class ScheduleViewController: UIViewController {
     
     @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
         if gesture.direction == .left {
-            currentWeekStartDate = currentWeekStartDate.dateByAddingWeeks(1)
+            currentWeekStartDate = dateManager.getNextWeekStart(from: currentWeekStartDate)
             swipeWeekWithAnimation(direction: .left)
         } else if gesture.direction == .right {
-            currentWeekStartDate = currentWeekStartDate.dateByAddingWeeks(-1)
+            currentWeekStartDate = dateManager.getPreviousWeekStart(from: currentWeekStartDate)
             swipeWeekWithAnimation(direction: .right)
         }
     }
@@ -88,7 +104,7 @@ class ScheduleViewController: UIViewController {
                 translationX: -offsetX, y: 0
             )
         }, completion: { _ in
-            self.daysOfWeek = self.currentWeekStartDate.datesForWeek()
+            self.daysOfWeek = self.dateManager.getWeekDates(from: self.currentWeekStartDate)
             self.mainView.scheduleCollectionView.collectionViewLayout.invalidateLayout()
             self.mainView.scheduleCollectionView.reloadData()
             self.mainView.scheduleCollectionView.transform = .identity
@@ -114,19 +130,14 @@ extension ScheduleViewController: UICollectionViewDelegate {
         let selectedDay = daysOfWeek[indexPath.item]
         let selectedHour = indexPath.section
         
-        let calendar = Calendar.current
-        var dateComponents = calendar.dateComponents([.year, .month, .day], from: selectedDay)
-        dateComponents.hour = selectedHour
-        dateComponents.minute = 0
-        
-        guard let startDate = calendar.date(from: dateComponents) else { return }
+        let startDate = dateManager.getDate(on: selectedDay, at: selectedHour)
         
         let formVC = LessonFormViewController()
         formVC.startDate = startDate
         formVC.lessonManager = lessonManager
-        if let index = lessonManager.lessons.firstIndex(where: {$0.startDate == startDate}) {
+        if let lesson = lessonManager.getLesson(at: startDate) {
             formVC.isEditMode = true
-            formVC.editingLesson = lessonManager.lessons[index]
+            formVC.editingLesson = lesson
         }
         present(UINavigationController(rootViewController: formVC), animated: true)
     }
@@ -152,19 +163,12 @@ extension ScheduleViewController: UICollectionViewDataSource {
         let day = daysOfWeek[indexPath.item]
         let hour = indexPath.section
         
-        let calendar = Calendar.current
+        let startDate = dateManager.getDate(on: day, at: hour)
         
-        guard let slotStartDate = calendar.date(
-            bySettingHour: hour,
-            minute: 0,
-            second: 0,
-            of: day
-        ) else { return cell }
-        
-        if let lesson = lessonManager.lessonAt(at: slotStartDate) {
+        if let lesson = lessonManager.getLesson(at: startDate) {
             cell.configureBookedCell(cell, with: lesson)
         } else {
-            cell.configureFreeCell(cell, for: slotStartDate)
+            cell.configureFreeCell(cell, for: startDate)
         }
         return cell
     }
@@ -175,10 +179,10 @@ extension ScheduleViewController: UICollectionViewDataSource {
             let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: DayHeaderView.reuseIdentifier, for: indexPath) as! DayHeaderView
             
             let date = daysOfWeek[indexPath.item]
-            view.dayLabel.text = date.dayWeekString()
-            view.dateLabel.text = date.dateString()
+            view.dayLabel.text = dateFormatterService.dayWeekString(from: date)
+            view.dateLabel.text = dateFormatterService.dateString(from: date)
             
-            let isToday = Calendar.current.isDateInToday(date)
+            let isToday = dateManager.isToday(date)
             
             view.dayLabel.textColor = isToday ? .blue : .darkGray
             view.dayLabel.font = isToday ? .boldSystemFont(ofSize: 16) : .systemFont(ofSize: 14)
@@ -187,6 +191,8 @@ extension ScheduleViewController: UICollectionViewDataSource {
             view.dateLabel.font = isToday ? .boldSystemFont(ofSize: 18) : .systemFont(ofSize: 16)
             
             return view
+            
+            
         } else if kind == HourHeaderView.elementKind {
             let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HourHeaderView.reuseIdentifier, for: indexPath) as! HourHeaderView
             

@@ -9,7 +9,7 @@ import UIKit
 
 class LessonFormViewController: UIViewController {
     
-    var lessonManager: LessonManager!
+    var lessonManager: LessonManagerProtocol!
     var startDate: Date!
     var isEditMode = false
     var editingLesson: Lesson?
@@ -70,9 +70,9 @@ class LessonFormViewController: UIViewController {
         )
         
         if isEditMode, let lesson = editingLesson {
-            lessonManager.updateLesson(lesson, with: lessonData)
+            lessonManager.updateLesson(oldLesson: lesson, with: lessonData)
         } else {
-            lessonManager.addLesson(lessonData)
+            lessonManager.addLesson(with: lessonData)
         }
         
         NotificationCenter.default.post(name: .lessonsDidUpdate, object: nil)
