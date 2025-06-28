@@ -23,18 +23,23 @@ struct StudentData {
 }
 
 class StudentManager: StudentManagerProtocol {
+
     static let shared = StudentManager()
     
     private(set) var lessons: [Lesson]  = []
     private var students: [Student] = []
     
-    func addStudent(name: String, surname: String, parents: [String], phoneNumber: String) {
+    func getAllStudents() -> [Student] {
+        return students
+    }
+    
+    func addStudent(_ studentData: StudentData) {
         let newStudent = Student(
             id: UUID(),
-            name: name,
-            surname: surname,
-            parents: parents,
-            phoneNumber: phoneNumber
+            name: studentData.name,
+            surname: studentData.surname,
+            parents: studentData.parents,
+            phoneNumber: studentData.phoneNumber
         )
         students.append(newStudent)
     }
@@ -56,10 +61,6 @@ class StudentManager: StudentManagerProtocol {
         students.filter {
             $0.name?.lowercased().contains(searchText) ?? false
         }
-    }
-    
-    func getAllStudents() -> [Student] {
-        return students
     }
 }
 

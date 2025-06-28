@@ -8,7 +8,27 @@
 
 import Foundation
 
-struct DateManager {
+protocol DateManagerProtocol {
+    func getCurrentStartOfWeek() -> Date
+    func getStartOfWeek(date: Date) -> Date
+    func getNextWeekStart(from date: Date) -> Date
+    func getPreviousWeekStart(from date: Date) -> Date
+    func getWeekDates(from startDate: Date) -> [Date]
+    func getDate(on selectedDay: Date, at selectedHour: Int) -> Date
+    func isToday(_ date: Date) -> Bool
+}
+
+struct DateManager: DateManagerProtocol {
+    
+    private let calendar: Calendar
+    
+    init(calendar: Calendar = .current) {
+        self.calendar = calendar
+    }
+    
+    func getCurrentStartOfWeek() -> Date {
+        getStartOfWeek(date: Date())
+    }
     
     func getStartOfWeek(date: Date) -> Date {
         let calendar = Calendar.current

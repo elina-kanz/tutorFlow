@@ -8,7 +8,13 @@
 
 import Foundation
 
-struct DateFormatterService {
+protocol DateFormatterServiceProtocol {
+    func dayWeekString(from date: Date) -> String
+    func dateString(from date: Date) -> String
+    func monthYearString(from date: Date) -> String
+}
+
+struct DateFormatterService: DateFormatterServiceProtocol {
     
     static let shared = DateFormatterService()
     

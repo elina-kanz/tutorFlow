@@ -11,20 +11,25 @@ class ScheduleViewController: UIViewController {
    
     private var lessonManager: LessonManagerProtocol
     private var studentManager: StudentManagerProtocol
-    private var dateManager = DateManager()
-    private var dateFormatterService = DateFormatterService()
-    
+    private var dateManager: DateManagerProtocol
+    private var dateFormatterService: DateFormatterServiceProtocol
     
     private let mainView: ScheduleView = .init()
-    private var currentWeekStartDate = Date().startOfWeek()
+    private lazy var dataSource = ScheduleDataSource(daysOfWeek, dateManager, lessonManager, dateFormatterService)
+    private var currentWeekStartDate: Date
     private var daysOfWeek: [Date] = []
     
     init(
         lessonManager: LessonManagerProtocol = LessonManager.shared,
-        studentManager: StudentManagerProtocol = StudentManager.shared
+        studentManager: StudentManagerProtocol = StudentManager.shared,
+        dateManager: DateManagerProtocol = DateManager(),
+        dateFormatterService: DateFormatterServiceProtocol = DateFormatterService()
     ) {
         self.lessonManager = lessonManager
         self.studentManager = studentManager
+        self.dateManager = dateManager
+        self.dateFormatterService = dateFormatterService
+        currentWeekStartDate = dateManager.getCurrentStartOfWeek()
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -39,7 +44,7 @@ class ScheduleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Schedule"
-        // configure()
+        
         setupCollectionView()
         setupMonthYear()
         setupWeekDays()
@@ -50,13 +55,15 @@ class ScheduleViewController: UIViewController {
     
     private func setupCollectionView() {
         mainView.scheduleCollectionView.delegate = self
-        mainView.scheduleCollectionView.dataSource = self
-        mainView.scheduleCollectionView.isPagingEnabled = true
+        mainView.scheduleCollectionView.dataSource = dataSource
+       // mainView.scheduleCollectionView.dataSource = self
+       // mainView.scheduleCollectionView.isPagingEnabled = true
         mainView.scheduleCollectionView.backgroundColor = UIColor.gray.withAlphaComponent(0.05)
     }
     
     private func setupWeekDays() {
-        daysOfWeek = currentWeekStartDate.datesForWeek()
+        daysOfWeek = dateManager.getWeekDates(from: currentWeekStartDate)
+        (self.dataSource as? ScheduleDataSource)?.updateDaysOfWeek(self.daysOfWeek)
         mainView.scheduleCollectionView.reloadData()
     }
     
@@ -105,6 +112,7 @@ class ScheduleViewController: UIViewController {
             )
         }, completion: { _ in
             self.daysOfWeek = self.dateManager.getWeekDates(from: self.currentWeekStartDate)
+            (self.dataSource as? ScheduleDataSource)?.updateDaysOfWeek(self.daysOfWeek)
             self.mainView.scheduleCollectionView.collectionViewLayout.invalidateLayout()
             self.mainView.scheduleCollectionView.reloadData()
             self.mainView.scheduleCollectionView.transform = .identity
@@ -141,68 +149,6 @@ extension ScheduleViewController: UICollectionViewDelegate {
         }
         present(UINavigationController(rootViewController: formVC), animated: true)
     }
-}
-
-
-// MARK: - UICollectionViewDataSource
-
-extension ScheduleViewController: UICollectionViewDataSource {
-    
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 24
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 7
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ScheduleCell.reuseIdentifier, for: indexPath) as! ScheduleCell
-        
-        let day = daysOfWeek[indexPath.item]
-        let hour = indexPath.section
-        
-        let startDate = dateManager.getDate(on: day, at: hour)
-        
-        if let lesson = lessonManager.getLesson(at: startDate) {
-            cell.configureBookedCell(cell, with: lesson)
-        } else {
-            cell.configureFreeCell(cell, for: startDate)
-        }
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        
-        if kind == DayHeaderView.elementKind {
-            let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: DayHeaderView.reuseIdentifier, for: indexPath) as! DayHeaderView
-            
-            let date = daysOfWeek[indexPath.item]
-            view.dayLabel.text = dateFormatterService.dayWeekString(from: date)
-            view.dateLabel.text = dateFormatterService.dateString(from: date)
-            
-            let isToday = dateManager.isToday(date)
-            
-            view.dayLabel.textColor = isToday ? .blue : .darkGray
-            view.dayLabel.font = isToday ? .boldSystemFont(ofSize: 16) : .systemFont(ofSize: 14)
-            
-            view.dateLabel.textColor = isToday ? .blue : .darkGray
-            view.dateLabel.font = isToday ? .boldSystemFont(ofSize: 18) : .systemFont(ofSize: 16)
-            
-            return view
-            
-            
-        } else if kind == HourHeaderView.elementKind {
-            let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HourHeaderView.reuseIdentifier, for: indexPath) as! HourHeaderView
-            
-            view.hourLabel.text = "\(indexPath.section):00"
-            
-            return view
-        }
-        fatalError("Unexpected supplementary view kind")
-    }
-    
 }
 
 extension Notification.Name {

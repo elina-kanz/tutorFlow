@@ -7,7 +7,7 @@
 protocol StudentManagerProtocol {
     func getAllStudents() -> [Student]
     func addStudent(_ StudentData: StudentData)
-    func updateStudent(_ lessonData: StudentData)
-    func deleteStudent(id: String)
-    func searchStudents(with searchText: String)
+    func updateStudent(_ student: Student, with newLessonData: StudentData)
+    func deleteStudent(_ student: Student)
+    func searchStudents(with searchText: String) -> [Student]
 }
