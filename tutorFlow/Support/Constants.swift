@@ -7,5 +7,5 @@
 import UIKit
 
 struct Constants {
-    static let spacing: CGFloat = 16
+    static let durationOptions = [30, 45, 60, 90, 120]
 }

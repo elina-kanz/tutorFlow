@@ -9,12 +9,33 @@ import UIKit
 
 class ScheduleViewController: UIViewController {
    
+    private var lessonManager: LessonManagerProtocol
+    private var studentManager: StudentManagerProtocol
+    private var dateManager: DateManagerProtocol
+    private var dateFormatterService: DateFormatterServiceProtocol
+    
     private let mainView: ScheduleView = .init()
-    private var currentWeekStartDate = Date().startOfWeek()
+    private lazy var dataSource = ScheduleDataSource(daysOfWeek, dateManager, lessonManager, dateFormatterService)
+    private var currentWeekStartDate: Date
     private var daysOfWeek: [Date] = []
     
-    private var scheduleData: [Date: [Event]] = [:]
+    init(
+        lessonManager: LessonManagerProtocol = LessonManager.shared,
+        studentManager: StudentManagerProtocol = StudentManager.shared,
+        dateManager: DateManagerProtocol = DateManager(),
+        dateFormatterService: DateFormatterServiceProtocol = DateFormatterService()
+    ) {
+        self.lessonManager = lessonManager
+        self.studentManager = studentManager
+        self.dateManager = dateManager
+        self.dateFormatterService = dateFormatterService
+        currentWeekStartDate = dateManager.getCurrentStartOfWeek()
+        super.init(nibName: nil, bundle: nil)
+    }
     
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func loadView() {
         view = self.mainView
@@ -22,29 +43,32 @@ class ScheduleViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavBar(title: "Schedule")
-        // configure()
+        self.navigationItem.title = "Schedule"
+        
         setupCollectionView()
         setupMonthYear()
         setupWeekDays()
         setupSwipeGestures()
+        setupObservers()
+        mainView.scheduleCollectionView.reloadData()
     }
     
     private func setupCollectionView() {
-        mainView.daysOfWeekCollectionView.delegate = self
-        mainView.daysOfWeekCollectionView.dataSource = self
-        mainView.daysOfWeekCollectionView.isPagingEnabled = true
-        mainView.daysOfWeekCollectionView.backgroundColor = UIColor.gray.withAlphaComponent(0.05)
+        mainView.scheduleCollectionView.delegate = self
+        mainView.scheduleCollectionView.dataSource = dataSource
+       // mainView.scheduleCollectionView.dataSource = self
+       // mainView.scheduleCollectionView.isPagingEnabled = true
+        mainView.scheduleCollectionView.backgroundColor = UIColor.gray.withAlphaComponent(0.05)
     }
     
     private func setupWeekDays() {
-        daysOfWeek = currentWeekStartDate.datesForWeek()
-        mainView.daysOfWeekCollectionView.reloadData()
+        daysOfWeek = dateManager.getWeekDates(from: currentWeekStartDate)
+        (self.dataSource as? ScheduleDataSource)?.updateDaysOfWeek(self.daysOfWeek)
+        mainView.scheduleCollectionView.reloadData()
     }
     
     private func setupMonthYear() {
-        let monthYear = "\(currentWeekStartDate.monthString()) \(currentWeekStartDate.yearString())"
-        mainView.monthLabel.text = monthYear
+        mainView.monthLabel.text = dateFormatterService.monthYearString(from: currentWeekStartDate)
     }
     
     private func setupSwipeGestures() {
@@ -57,134 +81,76 @@ class ScheduleViewController: UIViewController {
         view.addGestureRecognizer(rightSwipe)
     }
     
+    private func setupObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLessonsUpdate),
+            name: .lessonsDidUpdate,
+            object: nil
+        )
+    }
+    
     @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
         if gesture.direction == .left {
-            currentWeekStartDate = currentWeekStartDate.dateByAddingWeeks(1)
+            currentWeekStartDate = dateManager.getNextWeekStart(from: currentWeekStartDate)
             swipeWeekWithAnimation(direction: .left)
         } else if gesture.direction == .right {
-            currentWeekStartDate = currentWeekStartDate.dateByAddingWeeks(-1)
+            currentWeekStartDate = dateManager.getPreviousWeekStart(from: currentWeekStartDate)
             swipeWeekWithAnimation(direction: .right)
         }
     }
     
     private func swipeWeekWithAnimation(direction: UISwipeGestureRecognizer.Direction) {
-        let newDates = currentWeekStartDate.datesForWeek()
+        
         setupMonthYear()
-        let tempCopyCollectionView = UICollectionView(
-            frame: mainView.daysOfWeekCollectionView.frame,
-            collectionViewLayout: mainView.daysOfWeekCollectionView.collectionViewLayout
-        )
-        tempCopyCollectionView.register(ScheduleCell.self, forCellWithReuseIdentifier: ScheduleCell.reuseIdentifier)
-        tempCopyCollectionView.register(DayHeaderView.self, forSupplementaryViewOfKind: DayHeaderView.elementKind, withReuseIdentifier: DayHeaderView.reuseIdentifier)
-        tempCopyCollectionView.register(HourHeaderView.self, forSupplementaryViewOfKind: HourHeaderView.elementKind, withReuseIdentifier: HourHeaderView.reuseIdentifier)
-        
-        tempCopyCollectionView.dataSource = self
-        tempCopyCollectionView.delegate = self
-        tempCopyCollectionView.backgroundColor = .clear
-        tempCopyCollectionView.isScrollEnabled = false
-        view.addSubview(tempCopyCollectionView)
-        
-        tempCopyCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tempCopyCollectionView.topAnchor.constraint(equalTo: mainView.monthLabel.bottomAnchor, constant: 10),
-            tempCopyCollectionView.leadingAnchor.constraint(equalTo: mainView.contentView.leadingAnchor),
-            tempCopyCollectionView.trailingAnchor.constraint(equalTo: mainView.contentView.trailingAnchor),
-            tempCopyCollectionView.heightAnchor.constraint(equalToConstant: 60),
-        ])
-        
+
         let offsetX = direction == .left ? view.bounds.width : -view.bounds.width
-        tempCopyCollectionView.transform = CGAffineTransform(translationX: offsetX, y: 0)
-        
-        daysOfWeek = newDates
-        mainView.daysOfWeekCollectionView.reloadData()
         
         UIView.animate(withDuration: 0.3, animations: {
-            self.mainView.daysOfWeekCollectionView.transform = CGAffineTransform(
+            self.mainView.scheduleCollectionView.transform = CGAffineTransform(
                 translationX: -offsetX, y: 0
             )
-            tempCopyCollectionView.transform = .identity
-        }) { _ in
-            self.mainView.daysOfWeekCollectionView.transform = .identity
-            tempCopyCollectionView.removeFromSuperview()
+        }, completion: { _ in
+            self.daysOfWeek = self.dateManager.getWeekDates(from: self.currentWeekStartDate)
+            (self.dataSource as? ScheduleDataSource)?.updateDaysOfWeek(self.daysOfWeek)
+            self.mainView.scheduleCollectionView.collectionViewLayout.invalidateLayout()
+            self.mainView.scheduleCollectionView.reloadData()
+            self.mainView.scheduleCollectionView.transform = .identity
+        })
+    }
+    
+    @objc private func handleLessonsUpdate() {
+        reloadCollectionView()
+    }
+    
+    func reloadCollectionView() {
+        UIView.performWithoutAnimation {
+            mainView.scheduleCollectionView.reloadData()
+            mainView.scheduleCollectionView.layoutIfNeeded()
         }
     }
+    
 }
 
-extension UIViewController {
-    func setupNavBar(title: String) {
-        self.navigationItem.title = title
-    }
-}
-
-// MARK: - UICollectionViewDelegateFlowLayout
-
-extension ScheduleViewController: UICollectionViewDelegateFlowLayout {
+extension ScheduleViewController: UICollectionViewDelegate {
     
-    func collectionView(_ collectionView: UICollectionView,
-                       layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = floor(collectionView.bounds.width / 7)
-
-        return CGSize(width: width, height: 60)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView,
-                       layout collectionViewLayout: UICollectionViewLayout,
-                       minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 0
-    }
-    
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        insetForSectionAt section: Int) -> UIEdgeInsets {
-        return .zero
-    }
-}
-
-// MARK: - UICollectionViewDataSource
-
-extension ScheduleViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedDay = daysOfWeek[indexPath.item]
+        let selectedHour = indexPath.section
         
-        var cell = collectionView.dequeueReusableCell(withReuseIdentifier: ScheduleCell.reuseIdentifier, for: indexPath)
+        let startDate = dateManager.getDate(on: selectedDay, at: selectedHour)
         
-        let day = indexPath.item
-        let hour = indexPath.section
-        
-        return cell
-    }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return daysOfWeek.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        
-        if kind == "DayHeader" {
-            let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: DayHeaderView.reuseIdentifier, for: indexPath) as! DayHeaderView
-            
-            let date = daysOfWeek[indexPath.item]
-            view.dayLabel.text = date.dayWeekString()
-            view.dateLabel.text = date.dateString()
-            
-            let isToday = Calendar.current.isDateInToday(date)
-            
-            view.dayLabel.textColor = isToday ? .blue : .gray
-            view.dayLabel.font = isToday ? .boldSystemFont(ofSize: 16) : .systemFont(ofSize: 16)
-            
-            view.dateLabel.textColor = isToday ? .blue : .gray
-            view.dateLabel.font = isToday ? .boldSystemFont(ofSize: 18) : .systemFont(ofSize: 16)
-            
-            return view
-        } else if kind == "HourHeader" {
-            let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HourHeaderView.reuseIdentifier, for: indexPath) as! HourHeaderView
-            
-            view.hourLabel.text = "\(indexPath.item):00"
-            
-            return view
+        let formVC = LessonFormViewController()
+        formVC.startDate = startDate
+        formVC.lessonManager = lessonManager
+        if let lesson = lessonManager.getLesson(at: startDate) {
+            formVC.isEditMode = true
+            formVC.editingLesson = lesson
         }
-        
-        return UICollectionReusableView()
+        present(UINavigationController(rootViewController: formVC), animated: true)
     }
+}
+
+extension Notification.Name {
+    static let lessonsDidUpdate = Notification.Name("lessonsDidUpdate")
 }

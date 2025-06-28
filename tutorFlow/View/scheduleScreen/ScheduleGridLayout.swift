@@ -1,44 +1,77 @@
-//
-//  ScheduleGridLayout.swift
-//  tutorFlow
-//
-//  Created by Elina Kanzafarova on 13.06.2025.
-//
-
 import UIKit
 
 class ScheduleGridLayout: UICollectionViewLayout {
     
     private var cache: [IndexPath: UICollectionViewLayoutAttributes] = [:]
+    private var supplementaryCache: [String: [IndexPath: UICollectionViewLayoutAttributes]] = [:]
     private var contentSize: CGSize = .zero
     
-    let rowHeight: CGFloat = 60
-    let columnWidth: CGFloat = 80
+    let rowHeight: CGFloat = 50
+    var columnWidth: CGFloat = 0
     
-    let timeColumnWidth: CGFloat = 60
     let dayRowHeight: CGFloat = 50
+    let timeColumnWidth: CGFloat = 50
     
-    let numberOfHours = 24
     let numberOfDays = 7
+    let numberOfHours = 24
     
     override func prepare() {
         super.prepare()
-        guard let collectionView = collectionView else { return }
-
-        cache.removeAll()
         
-        let width = timeColumnWidth + CGFloat(numberOfDays) * columnWidth
-        let height = dayRowHeight + CGFloat(numberOfHours) * rowHeight
-        contentSize = CGSize(width: width, height: height)
+        cache.removeAll()
+        supplementaryCache.removeAll()
+        
+        guard let collectionView = collectionView else { return }
+        let availableWidth = collectionView.safeAreaLayoutGuide.layoutFrame.width - timeColumnWidth
+        columnWidth = availableWidth / CGFloat(numberOfDays)
+        contentSize = CGSize(
+            width: timeColumnWidth + columnWidth * CGFloat(numberOfDays),
+            height: dayRowHeight + rowHeight * CGFloat(numberOfHours)
+        )
+        
+        var daysHeaderCache: [IndexPath: UICollectionViewLayoutAttributes] = [:]
+        
+        for item in 0..<numberOfDays {
+            let indexPath = IndexPath(item: item, section: 0)
+            let attributes = UICollectionViewLayoutAttributes(forSupplementaryViewOfKind: DayHeaderView.elementKind, with: indexPath)
+            attributes.frame = CGRect(
+                x: timeColumnWidth + CGFloat(item) * columnWidth,
+                y: 0,
+                width: columnWidth,
+                height: dayRowHeight
+            )
+            attributes.zIndex = 1024
+            daysHeaderCache[indexPath] = attributes
+        }
+        
+        supplementaryCache[DayHeaderView.elementKind] = daysHeaderCache
+        
+        var hoursHeaderCache: [IndexPath: UICollectionViewLayoutAttributes] = [:]
+        
+        for section in 0..<numberOfHours {
+            let indexPath = IndexPath(item: 0, section: section)
+            let attributes = UICollectionViewLayoutAttributes(forSupplementaryViewOfKind: HourHeaderView.elementKind, with: indexPath)
+            attributes.frame = CGRect(
+                x: 0,
+                y: dayRowHeight + CGFloat(section) * rowHeight,
+                width: timeColumnWidth,
+                height: rowHeight
+            )
+            hoursHeaderCache[indexPath] = attributes
+        }
+        
+        supplementaryCache[HourHeaderView.elementKind] = hoursHeaderCache
         
         for section in 0..<numberOfHours {
             for item in 0..<numberOfDays {
                 let indexPath = IndexPath(item: item, section: section)
                 let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
-                
-                let x = timeColumnWidth + CGFloat(item) * columnWidth
-                let y = dayRowHeight + CGFloat(section) * rowHeight
-                attributes.frame = CGRect(x: x, y: y, width: columnWidth, height: rowHeight)
+                attributes.frame = CGRect(
+                    x: timeColumnWidth + CGFloat(item) * columnWidth,
+                    y: dayRowHeight + CGFloat(section) * rowHeight,
+                    width: columnWidth,
+                    height: rowHeight
+                )
                 cache[indexPath] = attributes
             }
         }
@@ -49,18 +82,43 @@ class ScheduleGridLayout: UICollectionViewLayout {
     }
     
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-        return cache.values.filter { $0.frame.intersects(rect) }
+        
+        guard let collectionView = collectionView else { return nil }
+        
+        var attributes = [UICollectionViewLayoutAttributes]()
+        
+        let daysHeaderCache = supplementaryCache[DayHeaderView.elementKind]!
+        for (_, attr) in daysHeaderCache {
+            let copiedAttr = attr.copy() as! UICollectionViewLayoutAttributes
+            copiedAttr.frame.origin.y = collectionView.contentOffset.y
+            copiedAttr.zIndex = 1024
+            if rect.intersects(copiedAttr.frame) {
+                attributes.append(copiedAttr)
+            }
+        }
+        
+        let hoursHeaderCache = supplementaryCache[HourHeaderView.elementKind]!
+        for (_, attr) in hoursHeaderCache where rect.intersects(attr.frame) {
+            attributes.append(attr)
+        }
+        
+        for (_, attr) in cache where rect.intersects(attr.frame) {
+            attributes.append(attr)
+        }
+        
+        return attributes
     }
     
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        cache[indexPath]
+        return cache[indexPath]
     }
     
     override func layoutAttributesForSupplementaryView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        return cache[indexPath]
+        return supplementaryCache[elementKind]?[indexPath]
     }
     
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
         return true
     }
+
 }
