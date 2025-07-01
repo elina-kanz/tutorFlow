@@ -63,7 +63,7 @@ class ScheduleViewController: UIViewController {
     
     private func setupWeekDays() {
         daysOfWeek = dateManager.getWeekDates(from: currentWeekStartDate)
-        (self.dataSource as? ScheduleDataSource)?.updateDaysOfWeek(self.daysOfWeek)
+        self.dataSource.updateDaysOfWeek(self.daysOfWeek)
         mainView.scheduleCollectionView.reloadData()
     }
     
@@ -112,7 +112,7 @@ class ScheduleViewController: UIViewController {
             )
         }, completion: { _ in
             self.daysOfWeek = self.dateManager.getWeekDates(from: self.currentWeekStartDate)
-            (self.dataSource as? ScheduleDataSource)?.updateDaysOfWeek(self.daysOfWeek)
+            self.dataSource.updateDaysOfWeek(self.daysOfWeek)
             self.mainView.scheduleCollectionView.collectionViewLayout.invalidateLayout()
             self.mainView.scheduleCollectionView.reloadData()
             self.mainView.scheduleCollectionView.transform = .identity

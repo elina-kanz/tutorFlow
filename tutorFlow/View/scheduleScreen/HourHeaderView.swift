@@ -42,7 +42,7 @@ class HourHeaderView: UICollectionReusableView {
         ])
         
         backgroundColor = .systemBackground
-        layer.borderWidth = 1
+        layer.borderWidth = 0.5
         layer.borderColor = UIColor.systemGray3.cgColor
     }
 }

@@ -10,82 +10,128 @@ import UIKit
 class LessonFormView: UIView {
     
     lazy var contentView: UIStackView = {
-        let element = UIStackView()
-        element.axis = .vertical
-        element.backgroundColor = .systemBackground
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 16
+        stack.backgroundColor = .systemBackground
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
     }()
     
     lazy var titleTextField: UITextField = {
-        let element = UITextField()
-        element.placeholder = "Enter title"
-        element.font = .systemFont(ofSize: 16)
-        element.textColor = .darkGray
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
+        let field = UITextField()
+        field.placeholder = "Enter title"
+        field.font = .systemFont(ofSize: 16)
+        field.textColor = .darkGray
+        field.translatesAutoresizingMaskIntoConstraints = false
+        return field
     }()
     
-    lazy var dateLabel: UILabel = {
-        let element = UILabel()
-        element.font = .systemFont(ofSize: 12)
-        element.textColor = .black
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
-    }()
-    
-    lazy var datePickerContainer: UIView = {
-        let element = UIView()
-        element.backgroundColor = .secondarySystemBackground
-        element.layer.cornerRadius = 10
-        element.clipsToBounds = true
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
+    lazy var dateContainer: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
     }()
     
     lazy var datePicker: UIDatePicker = {
-        let element = UIDatePicker()
-        element.datePickerMode = .dateAndTime
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
+        let picker = UIDatePicker()
+        picker.datePickerMode = .dateAndTime
+        picker.preferredDatePickerStyle = .compact
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        return picker
     }()
     
     lazy var durationPicker: UIPickerView = {
-        let element = UIPickerView()
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
+        let picker = UIPickerView()
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        return picker
     }()
     
-    lazy var studentsContainer: UIView = {
-        let element = UIView()
-        element.backgroundColor = .secondarySystemBackground
-        element.layer.cornerRadius = 10
-        element.clipsToBounds = true
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
+    lazy var studentsContainer: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
     }()
     
-    lazy var studentsTableView: UITableView = {
-        let element = UITableView()
-        element.register(UITableViewCell.self, forCellReuseIdentifier: StudentCell.reuseIdentifier)
-        element.layer.cornerRadius = 10
-        element.clipsToBounds = true
-        element.allowsMultipleSelection = true
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
+    lazy var searchField: UITextField = {
+        let field = UITextField()
+        field.placeholder = "Student's surname"
+        field.borderStyle = .roundedRect
+        field.returnKeyType = .done
+        field.translatesAutoresizingMaskIntoConstraints = false
+        return field
+    }()
+    
+    lazy var resultsTableView: UITableView = {
+        let table = UITableView()
+        table.register(StudentCell.self, forCellReuseIdentifier: StudentCell.reuseIdentifier)
+        table.isHidden = true
+        table.layer.cornerRadius = 8
+        table.clipsToBounds = true
+        table.rowHeight = 44
+        return table
+    }()
+    
+    lazy var selectedStudentsCollection: UICollectionView = {
+            let layout = UICollectionViewFlowLayout()
+            layout.scrollDirection = .horizontal
+            layout.itemSize = CGSize(width: 120, height: 30)
+            
+            let collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
+            collection.register(SelectedStudentCell.self, forCellWithReuseIdentifier: "SelectedStudentCell")
+            collection.backgroundColor = .clear
+            collection.showsHorizontalScrollIndicator = false
+            return collection
+        }()
+    
+    lazy var recurrenceContainer: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 8
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
+    lazy var recurrenceLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Repeat:"
+        label.font = .systemFont(ofSize: 16)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    lazy var recurrencePicker: UIPickerView = {
+        let picker = UIPickerView()
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        return picker
+    }()
+    
+    
+    lazy var notesTextField: UITextField = {
+        let field = UITextField()
+        field.placeholder = "Enter notes"
+        field.font = .systemFont(ofSize: 16)
+        field.textColor = .darkGray
+        field.translatesAutoresizingMaskIntoConstraints = false
+        return field
     }()
     
     lazy var deleteButton: UIButton = {
-        let element = UIButton()
-        element.setTitle("Delete lesson", for: .normal)
-        element.setTitleColor(.red, for: .normal)
-        element.titleLabel?.font = .systemFont(ofSize: 16)
-        element.layer.borderColor = UIColor.red.cgColor
-        element.layer.borderWidth = 1
-        element.layer.cornerRadius = 8
-        element.isHidden = true
-        element.translatesAutoresizingMaskIntoConstraints = false
-        return element
+        let button = UIButton()
+        button.setTitle("Delete lesson", for: .normal)
+        button.setTitleColor(.red, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 16)
+        button.layer.borderColor = UIColor.red.cgColor
+        button.layer.borderWidth = 1
+        button.layer.cornerRadius = 8
+        button.isHidden = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
     init () {
@@ -100,61 +146,55 @@ class LessonFormView: UIView {
     
     private func setViews() {
         
-        self.backgroundColor = .systemBackground
+        backgroundColor = .systemBackground
         
         addSubview(contentView)
-        
-        contentView.addArrangedSubview(titleTextField)
-        contentView.addArrangedSubview(dateLabel)
-        contentView.addArrangedSubview(datePickerContainer)
         
         contentView.layoutMargins = UIEdgeInsets(top: 20, left: 16, bottom: 20, right: 16)
         contentView.isLayoutMarginsRelativeArrangement = true
         
-        datePickerContainer.addSubview(datePicker)
-        datePickerContainer.addSubview(durationPicker)
+        contentView.addArrangedSubview(titleTextField)
+        
+        contentView.addArrangedSubview(dateContainer)
+        dateContainer.addArrangedSubview(datePicker)
+        dateContainer.addArrangedSubview(durationPicker)
         
         contentView.addArrangedSubview(studentsContainer)
-
-        studentsContainer.addSubview(studentsTableView)
+        studentsContainer.addArrangedSubview(searchField)
+        studentsContainer.addArrangedSubview(resultsTableView)
+        studentsContainer.addArrangedSubview(selectedStudentsCollection)
         
+        contentView.addArrangedSubview(recurrenceContainer)
+        recurrenceContainer.addArrangedSubview(recurrenceLabel)
+        recurrenceContainer.addArrangedSubview(recurrencePicker)
+        
+        contentView.addArrangedSubview(notesTextField)
         contentView.addArrangedSubview(deleteButton)
     }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            contentView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 16),
+            contentView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            contentView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            contentView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
             
-            titleTextField.heightAnchor.constraint(equalToConstant: 44),
-            datePickerContainer.heightAnchor.constraint(equalToConstant: 200),
-            
-            datePicker.topAnchor.constraint(equalTo: datePickerContainer.topAnchor, constant: 8),
-            datePicker.leadingAnchor.constraint(equalTo: datePickerContainer.leadingAnchor, constant: 8),
-            datePicker.trailingAnchor.constraint(equalTo: datePickerContainer.trailingAnchor, constant: -8),
             datePicker.heightAnchor.constraint(equalToConstant: 40),
+            durationPicker.heightAnchor.constraint(equalToConstant: 120),
             
-            durationPicker.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 2),
-            durationPicker.leadingAnchor.constraint(equalTo: datePickerContainer.leadingAnchor),
-            durationPicker.trailingAnchor.constraint(equalTo: datePickerContainer.trailingAnchor),
-            durationPicker.bottomAnchor.constraint(equalTo: datePickerContainer.bottomAnchor),
+            resultsTableView.heightAnchor.constraint(equalToConstant: 200),
+            selectedStudentsCollection.heightAnchor.constraint(equalToConstant: 40),
+            searchField.heightAnchor.constraint(equalToConstant: 40),
             
-            studentsContainer.topAnchor.constraint(equalTo: datePickerContainer.bottomAnchor, constant: 4),
-            studentsContainer.heightAnchor.constraint(equalToConstant: 200),
-            
-            studentsTableView.topAnchor.constraint(equalTo: studentsContainer.topAnchor, constant: 8),
-            studentsTableView.leadingAnchor.constraint(equalTo: studentsContainer.leadingAnchor, constant: 8),
-            studentsTableView.trailingAnchor.constraint(equalTo: studentsContainer.trailingAnchor, constant: -8),
-            studentsTableView.bottomAnchor.constraint(equalTo: studentsContainer.bottomAnchor, constant: -8),
-                    
-            deleteButton.topAnchor.constraint(equalTo: studentsContainer.bottomAnchor, constant: 2),
-            
-            deleteButton.topAnchor.constraint(equalTo: datePickerContainer.bottomAnchor, constant: 2),
-            deleteButton.centerXAnchor.constraint(equalTo: datePickerContainer.centerXAnchor),
-            deleteButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            recurrencePicker.heightAnchor.constraint(equalToConstant: 100),
+            recurrencePicker.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.7),
         ])
     }
+    
+    func showSearchResults(_ show: Bool) {
+            UIView.animate(withDuration: 0.3) {
+                self.resultsTableView.isHidden = !show
+            }
+        }
 }
                         

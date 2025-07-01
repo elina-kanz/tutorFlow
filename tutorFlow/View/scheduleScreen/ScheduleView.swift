@@ -79,7 +79,7 @@ class ScheduleView: UIView {
             contentView.bottomAnchor.constraint(equalTo: bottomAnchor),
             
             topPanelStack.topAnchor.constraint(equalTo: contentView.topAnchor),
-            topPanelStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            topPanelStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             topPanelStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             topPanelStack.heightAnchor.constraint(equalToConstant: 40),
             
