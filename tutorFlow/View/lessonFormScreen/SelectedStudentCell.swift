@@ -1,15 +1,14 @@
 //
-//  StudentCell.swift
+//  SelectedStudentCell.swift
 //  tutorFlow
 //
-//  Created by Elina Kanzafarova on 25.06.2025.
+//  Created by Elina Kanzafarova on 28.06.2025.
 //
-
 import UIKit
 
-class StudentCell: UITableViewCell {
+class SelectedStudentCell: UICollectionViewCell {
     
-    static let reuseIdentifier = "StudentCell"
+    static let reuseIdentifier = "SelectedStudentCell"
     
     private lazy var studentLabel: UILabel = {
         let label = UILabel()
@@ -19,8 +18,8 @@ class StudentCell: UITableViewCell {
         return label
     }()
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setViews()
         setupConstraints()
     }
@@ -30,6 +29,7 @@ class StudentCell: UITableViewCell {
     }
     
     private func setViews() {
+        backgroundColor = .blue
         addSubview(studentLabel)
     }
     
@@ -42,3 +42,4 @@ class StudentCell: UITableViewCell {
         ])
     }
 }
+

@@ -17,10 +17,10 @@ class LessonFormViewController: UIViewController {
     private let mainView = LessonFormView.init()
     
     private var selectedDuration = 0
-    private let searchStudentController = UISearchController(searchResultsController: nil)
     private var allStudents: [Student] = []
     private var filteredStudents: [Student] = []
     private var selectedStudents: [Student] = []
+    private var selectedRecurrence: String = Constants.recurrenceOptions[0]
 
     override func loadView() {
         view = self.mainView
@@ -30,6 +30,7 @@ class LessonFormViewController: UIViewController {
         super.viewDidLoad()
         setupNavBar()
         setupDatePickers()
+        setupRecurrencyPicker()
         setupStudentSearch()
         
         if isEditMode, let lesson = editingLesson {
@@ -66,7 +67,8 @@ class LessonFormViewController: UIViewController {
             startDate: mainView.datePicker.date,
             duration: mainView.durationPicker.selectedRow(inComponent: 0),
             title: mainView.titleTextField.text ?? "New Lesson",
-            students: selectedStudents
+            students: selectedStudents,
+            recurrence: selectedRecurrence
         )
         
         if isEditMode, let lesson = editingLesson {
@@ -122,16 +124,14 @@ class LessonFormViewController: UIViewController {
         }
     }
     
+    private func setupRecurrencyPicker() {
+        mainView.recurrencePicker.delegate = self
+        mainView.recurrencePicker.dataSource = self
+    }
+    
     private func setupStudentSearch() {
- 
-        searchStudentController.searchResultsUpdater = self
-        searchStudentController.obscuresBackgroundDuringPresentation = false
-        searchStudentController.searchBar.placeholder = "Search Student"
-        navigationItem.searchController = searchStudentController
-        definesPresentationContext = true
-        
-        mainView.studentsTableView.delegate = self
-        mainView.studentsTableView.dataSource = self
+        mainView.resultsTableView.delegate = self
+        mainView.resultsTableView.dataSource = self
     }
     
     
@@ -147,13 +147,13 @@ class LessonFormViewController: UIViewController {
         }
         
         selectedStudents = lesson.students
-        mainView.studentsTableView.reloadData()
+        mainView.resultsTableView.reloadData()
     }
     
     private func loadStudents() {
         allStudents = StudentManager.shared.getAllStudents()
         filteredStudents = allStudents
-        mainView.studentsTableView.reloadData()
+        mainView.resultsTableView.reloadData()
     }
     
 }
@@ -161,12 +161,22 @@ class LessonFormViewController: UIViewController {
 extension  LessonFormViewController: UIPickerViewDelegate {
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return "\(Constants.durationOptions[row]) min"
+        
+        if pickerView == mainView.durationPicker {
+            return "\(Constants.durationOptions[row]) min"
+        } else {
+            return Constants.recurrenceOptions[row]
+        }
+        
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         
-        selectedDuration = Constants.durationOptions[row]
+        if pickerView == mainView.durationPicker {
+            selectedDuration = Constants.durationOptions[row]
+        } else {
+            selectedRecurrence = Constants.recurrenceOptions[row]
+        }
     }
 }
 
@@ -177,21 +187,12 @@ extension LessonFormViewController: UIPickerViewDataSource {
     }
 
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        Constants.durationOptions.count
-    }
-}
-
-extension LessonFormViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let searchText = searchController.searchBar.text?.lowercased() else { return }
         
-        if searchText.isEmpty {
-            filteredStudents = allStudents
+        if pickerView == mainView.durationPicker {
+            return Constants.durationOptions.count
         } else {
-            filteredStudents = StudentManager.shared.searchStudents(with: searchText)
-            }
-        
-        mainView.studentsTableView.reloadData()
+            return Constants.recurrenceOptions.count
+        }
     }
 }
 

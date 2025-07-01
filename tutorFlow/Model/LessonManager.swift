@@ -13,6 +13,7 @@ struct Lesson {
     var duration: Int
     var title: String
     var students: [Student] = []
+    var recurrence: String
 }
 
 struct LessonData {
@@ -20,6 +21,7 @@ struct LessonData {
     let duration: Int
     let title: String
     let students: [Student]
+    var recurrence: String
 }
 
 class LessonManager: LessonManagerProtocol {
@@ -42,7 +44,8 @@ class LessonManager: LessonManagerProtocol {
             startDate: lessonData.startDate,
             duration: lessonData.duration,
             title: lessonData.title,
-            students: lessonData.students
+            students: lessonData.students,
+            recurrence: lessonData.recurrence
         )
         
         lessons.append(newLesson)
@@ -54,6 +57,7 @@ class LessonManager: LessonManagerProtocol {
         lessons[index].startDate = newLessonData.startDate
         lessons[index].students = newLessonData.students
         lessons[index].duration = newLessonData.duration
+        lessons[index].recurrence = newLessonData.recurrence
      }
     
     func getLesson(at startDate: Date) -> Lesson? {

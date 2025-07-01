@@ -31,15 +31,15 @@ class ScheduleCell: UICollectionViewCell {
     func configureBookedCell(_ cell: ScheduleCell, with lesson: Lesson) {
         cell.backgroundColor = UIColor.systemRed.withAlphaComponent(0.1)
         cell.layer.borderColor = UIColor.systemBlue.cgColor
-        cell.layer.borderWidth = 1
+        cell.layer.borderWidth = 0.5
         
         lessonLabel.text = lesson.title
     }
     
     func configureFreeCell(_ cell: ScheduleCell, for date: Date) {
-        cell.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.1)
-        cell.layer.borderColor = UIColor.systemGreen.cgColor
-        cell.layer.borderWidth = 1
+        cell.backgroundColor = UIColor.systemBackground
+        cell.layer.borderColor = UIColor.systemGray5.cgColor
+        cell.layer.borderWidth = 0.5
         
         lessonLabel.text = ""
     }
