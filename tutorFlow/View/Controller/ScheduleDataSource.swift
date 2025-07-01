@@ -8,36 +8,28 @@ import UIKit
 
 class ScheduleDataSource: NSObject, UICollectionViewDataSource {
     
-    private var daysOfWeek: [Date]
-    private var  dateManager: DateManagerProtocol
-    private var lessonManager: LessonManagerProtocol
-    private var dateFormatterService: DateFormatterServiceProtocol
+    private let viewModel: ScheduleViewModel
     
-    init(_ daysOfWeek: [Date], _ dateManager: DateManagerProtocol, _ lessonManager:  LessonManagerProtocol, _ dateFormatterService: DateFormatterServiceProtocol) {
-        self.daysOfWeek = daysOfWeek
-        self.dateManager = dateManager
-        self.lessonManager = lessonManager
-        self.dateFormatterService = dateFormatterService
+    init(viewModel: ScheduleViewModel) {
+        self.viewModel = viewModel
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 24
+        return Constants.hoursInDayCount
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 7
+        return Constants.daysInWeekCount
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ScheduleCell.reuseIdentifier, for: indexPath) as! ScheduleCell
+    
         
-        let day = daysOfWeek[indexPath.item]
-        let hour = indexPath.section
+        let startDate = viewModel.dateFor(section: indexPath.section, item: indexPath.item)
         
-        let startDate = dateManager.getDate(on: day, at: hour)
-        
-        if let lesson = lessonManager.getLesson(at: startDate) {
+        if let lesson = viewModel.getLesson(at: startDate) {
             cell.configureBookedCell(cell, with: lesson)
         } else {
             cell.configureFreeCell(cell, for: startDate)
@@ -45,16 +37,20 @@ class ScheduleDataSource: NSObject, UICollectionViewDataSource {
         return cell
     }
     
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
         
         if kind == DayHeaderView.elementKind {
             let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: DayHeaderView.reuseIdentifier, for: indexPath) as! DayHeaderView
             
-            let date = daysOfWeek[indexPath.item]
-            view.dayLabel.text = dateFormatterService.dayWeekString(from: date)
-            view.dateLabel.text = dateFormatterService.dateString(from: date)
+            let date = viewModel.daysOfWeek[indexPath.item]
+            view.dayLabel.text = viewModel.dayWeekString(from: date)
+            view.dateLabel.text = viewModel.dayMonthString(from: date)
             
-            let isToday = dateManager.isToday(date)
+            let isToday = viewModel.isToday(date)
             
             view.dayLabel.textColor = isToday ? .blue : .darkGray
             view.dayLabel.font = isToday ? .boldSystemFont(ofSize: 16) : .systemFont(ofSize: 14)
@@ -74,10 +70,5 @@ class ScheduleDataSource: NSObject, UICollectionViewDataSource {
         }
         fatalError("Unexpected supplementary view kind")
     }
-    
-    func updateDaysOfWeek(_ newDays: [Date]) {
-        daysOfWeek = newDays
-    }
-    
 }
 
